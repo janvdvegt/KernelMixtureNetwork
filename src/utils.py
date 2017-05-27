@@ -20,7 +20,7 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
         centers = np.empty(0)
 
     if method is 'random':
-        return np.random.choice(y, k)
+        return np.random.choice(y, k, replace=False)
 
     # Iteratively remove part of pairs that are closest together until everything is at least 'd' apart
     elif method is 'distance':
