@@ -53,13 +53,17 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
 class KernelMixtureNetwork(BaseEstimator, RegressorMixin):
 
     def __init__(self):
-        pass
+        raise NotImplementedError
 
     def fit(self, X, y):
-        pass
+        raise NotImplementedError
 
     def predict(self, X, y=None):
-        pass
+        raise NotImplementedError
+
+    def score(self, X, y, sample_weight=None):
+        """mean? log likelihood"""
+        raise NotImplementedError
 
 
 
