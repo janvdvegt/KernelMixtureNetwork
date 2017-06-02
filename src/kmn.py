@@ -72,7 +72,7 @@ class KernelMixtureNetwork(BaseEstimator):
         self.test_loss = np.empty(0)
 
         if init_scales is None:
-            init_scales = np.array([0.1, 1.])
+            init_scales = np.array([1])
         self.init_scales = init_scales
         self.n_scales = n_scales = len(self.init_scales)
 
