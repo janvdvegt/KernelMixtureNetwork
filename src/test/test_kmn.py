@@ -34,5 +34,19 @@ class TestKernelMixtureNetwork(TestCase):
 
         self.assertTrue(mean_loglik < 3.)
 
+        # TODO:
+        # test for partial_fit()
+        # test for sample()
+        # test for predict_density()
+        # test for score()
+        # test for build_model()
+        # test for plot_loss()
+
+    def test_sample_center_points(self):
+        pass
+
+        # TODO:
+        # test sample_center_points() with all different methods
+
 if __name__ == '__main__':
     unittest.main()
