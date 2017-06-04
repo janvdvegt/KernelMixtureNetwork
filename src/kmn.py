@@ -97,6 +97,8 @@ class KernelMixtureNetwork(BaseEstimator):
 
         if self.fitted:
             print("Fitting model")
+		else:
+			raise Exception("Model not built yet, first use .fit()")
 
         for i in range(n_epoch):
             info_dict = self.inference.update(feed_dict={self.X_ph: X, self.y_ph: y})
@@ -127,14 +129,22 @@ class KernelMixtureNetwork(BaseEstimator):
         if y is None:
             y = np.linspace(self.y_min, self.y_max, num=resolution)
 
-        return self.sess.run(self.densities, feed_dict={self.X_ph: X.reshape(-1, 1), self.y_grid_ph: y})
+		if len(X.shape) < 2:
+			X = X.reshape((-1, 1))
+		
+        return self.sess.run(self.densities, feed_dict={self.X_ph: X, self.y_grid_ph: y})
 
     def sample(self, X, y=None):
 
+		if len(X.shape) < 2:
+			X = X.reshape((-1, 1))
         return self.sess.run(self.samples, feed_dict={self.X_ph: X})
 
     def score(self, X, y):
 
+		if len(X.shape) < 2:
+			X = X.reshape((-1, 1))
+        
         likelihoods = self.predict(X, y)
         return np.log(likelihoods.mean())
 
