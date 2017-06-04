@@ -97,8 +97,8 @@ class KernelMixtureNetwork(BaseEstimator):
 
         if self.fitted:
             print("Fitting model")
-		else:
-			raise Exception("Model not built yet, first use .fit()")
+        else:
+            raise Exception("Model not built yet, first use .fit()")
 
         for i in range(n_epoch):
             info_dict = self.inference.update(feed_dict={self.X_ph: X, self.y_ph: y})
