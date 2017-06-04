@@ -66,8 +66,7 @@ class KernelMixtureNetwork(BaseEstimator):
 
         self.estimator = estimator
         self.inputs = inputs
-        self.output = output
-
+        
         if inputs is None:
             self.n_inputs = 1
         else:
