@@ -61,16 +61,11 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
 
 class KernelMixtureNetwork(BaseEstimator):
 
-    def __init__(self, n_samples=10, center_sampling_method='k_means', n_centers=20, init_scales=None,
-                 estimator=None, inputs=None):
+    def __init__(self, n_samples=10, center_sampling_method='k_means', n_centers=20, init_scales='default',
+                 estimator=None, X_ph=None):
 
         self.estimator = estimator
-        self.inputs = inputs
-        
-        if inputs is None:
-            self.n_inputs = 1
-        else:
-            self.n_inputs = len(inputs)
+        self.X_ph = X_ph
 
         self.n_samples = n_samples
         self.center_sampling_method = center_sampling_method
@@ -79,7 +74,7 @@ class KernelMixtureNetwork(BaseEstimator):
         self.train_loss = np.empty(0)
         self.test_loss = np.empty(0)
 
-        if init_scales is None:
+        if init_scales is 'default':
             init_scales = np.array([1])
         self.init_scales = init_scales
         self.n_scales = len(self.init_scales)
@@ -87,9 +82,6 @@ class KernelMixtureNetwork(BaseEstimator):
         self.fitted = False
 
     def fit(self, X, y, n_epoch, **kwargs):
-
-        self.y_min = y.min()
-        self.y_max = y.max()
 
         self._build_model(X, y)
 
@@ -103,22 +95,17 @@ class KernelMixtureNetwork(BaseEstimator):
 
     def partial_fit(self, X, y, n_epoch=1, eval_set=None):
 
-        if self.fitted:
-            print("Fitting model")
-        else:
-            raise Exception("Model not built yet, first use .fit()")
+        print("Fitting model")
 
         for i in range(n_epoch):
-            feed_dict = self._feed_dict(X, y)
-            info_dict = self.inference.update(feed_dict=feed_dict)
+            info_dict = self.inference.update(feed_dict={self.X_ph: X, self.y_ph: y})
 
             train_loss = info_dict['loss'] / len(y)
             self.train_loss = np.append(self.train_loss, train_loss)
 
             if eval_set is not None:
                 X_test, y_test = eval_set
-                feed_dict = self._feed_dict(X_test, y_test)
-                test_loss = self.sess.run(self.inference.loss, feed_dict=feed_dict) / len(y_test)
+                test_loss = self.sess.run(self.inference.loss, feed_dict={self.X_ph: X_test, self.y_ph: y_test}) / len(y_test)
                 self.test_loss = np.append(self.test_loss, test_loss)
 
             if self.fitted is False:
@@ -130,53 +117,41 @@ class KernelMixtureNetwork(BaseEstimator):
 
         print("Optimal scales: {}".format(self.sess.run(self.scales)))
 
-    def _feed_dict(self, X, y=None, y_grid=None):
-        feed_dict = {}
-        if y is not None:
-            feed_dict[self.output] = y
-        if y_grid is not None:
-            feed_dict[self.y_grid_ph] = y_grid
-        for placeholder, x in zip(self.inputs, X):
-            feed_dict[placeholder] = x
-        return feed_dict
-
     def predict(self, X, y):
-        feed_dict = self._feed_dict(X, y)
-        return self.sess.run(self.likelihoods, feed_dict=feed_dict)
+        return self.sess.run(self.likelihoods, feed_dict={self.X_ph: X, self.y_ph: y})
 
     def predict_density(self, X, y=None, resolution=1000):
 
         if y is None:
             y = np.linspace(self.y_min, self.y_max, num=resolution)
 
-        feed_dict = self._feed_dict(X, y_grid=y)
-        return self.sess.run(self.densities, feed_dict=feed_dict)
+        return self.sess.run(self.densities, feed_dict={self.X_ph: X, self.y_grid_ph: y})
 
     def sample(self, X):
-        feed_dict = self._feed_dict(X)
-        return self.sess.run(self.samples, feed_dict=feed_dict)
+        return self.sess.run(self.samples, feed_dict={self.X_ph: X})
 
     def score(self, X, y):
         likelihoods = self.predict(X, y)
-        return np.log(likelihoods.mean())
+        return np.log(likelihoods).mean()
 
     def _build_model(self, X, y):
 
         self.n_features = X.shape[1]
+
+        self.y_min = y.min()
+        self.y_max = y.max()
+
         self.y_ph = y_ph = tf.placeholder(tf.float32, [None])
 
         if self.estimator is None:
-            self.X_ph = X_ph = [tf.placeholder(tf.float32, [None, self.n_features])]
-
-            x = Dense(32, activation='relu')(X_ph[0])
+            self.X_ph = tf.placeholder(tf.float32, [None, self.n_features])
+            x = Dense(32, activation='relu')(self.X_ph)
             x = Dense(16, activation='relu')(x)
             self.estimator = x
-        else:
-            self.X_ph = X_ph = self.inputs
 
         self.y_grid_ph = y_grid_ph = tf.placeholder(tf.float32)
 
-        self.batch_size = tf.shape(X_ph)[0]
+        self.batch_size = tf.shape(self.X_ph)[0]
 
         n_locs = self.n_centers
         self.locs = locs = sample_center_points(y, method=self.center_sampling_method, k=n_locs)
