@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans, AgglomerativeClustering
 import pandas as pd
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator
 from edward.models import Categorical, Mixture, Normal
 from keras.layers import Dense, Dropout
 import edward as ed
