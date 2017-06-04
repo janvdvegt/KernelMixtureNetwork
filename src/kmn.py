@@ -129,21 +129,21 @@ class KernelMixtureNetwork(BaseEstimator):
         if y is None:
             y = np.linspace(self.y_min, self.y_max, num=resolution)
 
-		if len(X.shape) < 2:
-			X = X.reshape((-1, 1))
+        if len(X.shape) < 2:
+            X = X.reshape((-1, 1))
 		
         return self.sess.run(self.densities, feed_dict={self.X_ph: X, self.y_grid_ph: y})
 
     def sample(self, X, y=None):
 
-		if len(X.shape) < 2:
-			X = X.reshape((-1, 1))
+        if len(X.shape) < 2:
+            X = X.reshape((-1, 1))
         return self.sess.run(self.samples, feed_dict={self.X_ph: X})
 
     def score(self, X, y):
 
-		if len(X.shape) < 2:
-			X = X.reshape((-1, 1))
+        if len(X.shape) < 2:
+            X = X.reshape((-1, 1))
         
         likelihoods = self.predict(X, y)
         return np.log(likelihoods.mean())
