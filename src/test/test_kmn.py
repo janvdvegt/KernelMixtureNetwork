@@ -1,11 +1,10 @@
-import unittest
-from unittest import TestCase
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import numpy as np
 from src.kmn import KernelMixtureNetwork
 
 
-class TestKernelMixtureNetwork(TestCase):
+class TestKernelMixtureNetwork(tf.test.TestCase):
 
     def create_dataset(self, n=5000):
         y_data = np.random.uniform(-10.5, 10.5, n)
@@ -24,23 +23,29 @@ class TestKernelMixtureNetwork(TestCase):
 
         self.assertTrue(isinstance(kmn, object))
 
-        kmn.fit(X_train, y_train, n_epoch=400, eval_set=(X_test, y_test))
+        kmn.fit(X_train, y_train, n_epoch=100, eval_set=(X_test, y_test))
 
-        self.assertTrue(kmn.train_loss[-1] < 2.)
+        # TODO: make this test deterministic!
+        train_loss1 = kmn.train_loss[-1]
+        self.assertTrue(train_loss1 < 2.)
         self.assertTrue(kmn.test_loss[-1] < 3.)
 
+        kmn.partial_fit(X_train, y_train, n_epoch=100, eval_set=(X_test, y_test))
+        self.assertTrue(kmn.train_loss[-1] <= train_loss1)
+
         likelihoods = kmn.predict(X_test, y_test)
-        mean_loglik = np.log(likelihoods).sum() / len(y_test)
+        mean_loglik = np.log(likelihoods).mean()
 
         self.assertTrue(mean_loglik < 3.)
 
+        score = kmn.score(X_test, y_test)
+        self.assertTrue(abs(mean_loglik - score) < 0.01)
+
         # TODO:
-        # test for partial_fit()
         # test for sample()
         # test for predict_density()
-        # test for score()
-        # test for build_model()
         # test for plot_loss()
+        # test with external estimator and X_ph input
 
     def test_sample_center_points(self):
         pass
@@ -49,4 +54,5 @@ class TestKernelMixtureNetwork(TestCase):
         # test sample_center_points() with all different methods
 
 if __name__ == '__main__':
-    unittest.main()
+    tf.test.main()
+
