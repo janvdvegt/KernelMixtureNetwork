@@ -131,7 +131,7 @@ class KernelMixtureNetwork(BaseEstimator):
 
         if len(X.shape) < 2:
             X = X.reshape((-1, 1))
-		
+
         return self.sess.run(self.densities, feed_dict={self.X_ph: X, self.y_grid_ph: y})
 
     def sample(self, X, y=None):
