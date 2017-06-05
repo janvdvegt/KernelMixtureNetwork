@@ -61,8 +61,8 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
 
 class KernelMixtureNetwork(BaseEstimator):
 
-    def __init__(self, n_samples=10, center_sampling_method='k_means', n_centers=20, init_scales='default',
-                 estimator=None, X_ph=None):
+    def __init__(self, n_samples=10, center_sampling_method='k_means', n_centers=20, keep_edges=False,
+                 init_scales='default', estimator=None, X_ph=None):
 
         self.sess = ed.get_session()
         self.inference = None
@@ -73,6 +73,7 @@ class KernelMixtureNetwork(BaseEstimator):
         self.n_samples = n_samples
         self.center_sampling_method = center_sampling_method
         self.n_centers = n_centers
+        self.keep_edges = keep_edges
 
         self.train_loss = np.empty(0)
         self.test_loss = np.empty(0)
@@ -124,9 +125,9 @@ class KernelMixtureNetwork(BaseEstimator):
             if self.fitted is False:
                 self.inference.print_progress(info_dict)
 
-        print("mean log-loss train: {:.3f}".format(-train_loss))
+        print("mean log-loss train: {:.3f}".format(train_loss))
         if eval_set is not None:
-            print("man log-loss test: {:.3f}".format(-test_loss))
+            print("man log-loss test: {:.3f}".format(test_loss))
 
         print("optimal scales: {}".format(self.sess.run(self.scales)))
 
@@ -181,7 +182,7 @@ class KernelMixtureNetwork(BaseEstimator):
 
         # locations of the gaussian kernel centers
         n_locs = self.n_centers
-        self.locs = locs = sample_center_points(y, method=self.center_sampling_method, k=n_locs)
+        self.locs = locs = sample_center_points(y, method=self.center_sampling_method, k=n_locs, keep_edges=self.keep_edges)
         self.locs_array = locs_array = tf.unstack(tf.transpose(tf.multiply(tf.ones((self.batch_size, n_locs)), locs)))
 
         # scales of the gaussian kernels
@@ -227,7 +228,7 @@ class KernelMixtureNetwork(BaseEstimator):
 
         plt.legend(fontsize=20)
         plt.xlabel('epoch', fontsize=15)
-        plt.ylabel('mean log-likelihood', fontsize=15)
+        plt.ylabel('mean negative log-likelihood', fontsize=15)
         plt.show()
 
         return fig, axes
