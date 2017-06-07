@@ -161,7 +161,8 @@ class KernelMixtureNetwork(BaseEstimator):
         conditional density over a predefined grid of target values
         """
         if y is None:
-            y = np.linspace(self.y_min, self.y_max, num=resolution)
+            max_scale = np.max(self.sess.run(self.scales))
+            y = np.linspace(self.y_min - 2.5 * max_scale, self.y_max + 2.5 * max_scale, num=resolution)
 
         return self.sess.run(self.densities, feed_dict={self.X_ph: X, self.y_grid_ph: y})
 
@@ -222,9 +223,12 @@ class KernelMixtureNetwork(BaseEstimator):
         self.samples = mixtures.sample()
 
         # store minmax of training target values for a sensible default grid for self.predict_density()
-        self.y_range = y.max() - y.min()
-        self.y_min = y.min() - 0.1 * self.y_range
-        self.y_max = y.max() + 0.1 * self.y_range
+        #self.y_range = y.max() - y.min()
+        #self.y_min = y.min() - 0.1 * self.y_range
+        #self.y_max = y.max() + 0.1 * self.y_range
+        self.y_min = y.min()
+        self.y_max = y.max()
+
         # placeholder for the grid
         self.y_grid_ph = y_grid_ph = tf.placeholder(tf.float32)
         # tensor to store grid point densities

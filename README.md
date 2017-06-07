@@ -7,3 +7,7 @@ as well as a plug-and-play estimator class with [Keras](https://keras.io/) and [
 For more technical details, see Jan van der Vegt's blog post on [Kernel Mixture Networks](https://janvdvegt.github.io/2017/06/04/Kernel-Mixture-Networks.html) 
 or ["How to obtain advanced probabilistic predictions for your data science use case"](http://www.bigdatarepublic.nl/kernel-mixture-networks/) 
 for a high-level summary.
+
+# KernelMixtureNetwork Class
+
+This class API allows you to plug in your own network together with the placeholder for the input, and uses kernels based on your training data to condition probability densities based on your input. What this class also does what is not discussed in the paper is allow you to train the bandwidth of your kernels. Currently only Gaussian kernels are supported but the class is easily extended. It is not meant as a package but just a reference on how to use this technique using TensorFlow, Edward and Keras.
