@@ -19,7 +19,7 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
     y = y.ravel()
 
     # keep all points as kernel centers
-    if method is 'all':
+    if method == 'all':
         return y
 
     # retain outer points to ensure expressiveness at the target borders
@@ -32,21 +32,21 @@ def sample_center_points(y, method='all', k=100, keep_edges=False):
     else:
         centers = np.empty(0)
 
-    if method is 'random':
+    if method == 'random':
         cluster_centers = np.random.choice(y, k, replace=False)
 
     # iteratively remove part of pairs that are closest together until everything is at least 'd' apart
-    elif method is 'distance':
+    elif method == 'distance':
         raise NotImplementedError
 
     # use 1-D k-means clustering
-    elif method is 'k_means':
+    elif method == 'k_means':
         model = KMeans(n_clusters=k, n_jobs=-2)
         model.fit(y.reshape(-1, 1))
         cluster_centers = model.cluster_centers_
 
     # use agglomerative clustering
-    elif method is 'agglomerative':
+    elif method == 'agglomerative':
         model = AgglomerativeClustering(n_clusters=k, linkage='complete')
         model.fit(y.reshape(-1, 1))
         labels = pd.Series(model.labels_, name='label')
@@ -94,7 +94,7 @@ class KernelMixtureNetwork(BaseEstimator):
         self.train_loss = np.empty(0)
         self.test_loss = np.empty(0)
 
-        if init_scales is 'default':
+        if init_scales == 'default':
             init_scales = np.array([1])
 
         # Transform scales so that the softplus will result in passed init_scales
@@ -141,7 +141,7 @@ class KernelMixtureNetwork(BaseEstimator):
                 self.test_loss = np.append(self.test_loss, -test_loss)
 
             # only print progress for the initial fit, not for additional updates
-            if self.fitted is False:
+            if not self.fitted:
                 self.inference.print_progress(info_dict)
 
         print("mean log-loss train: {:.3f}".format(train_loss))
